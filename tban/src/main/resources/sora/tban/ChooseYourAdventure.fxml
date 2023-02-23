@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="213.0" prefWidth="382.0" stylesheets="@styleSheet.css" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sora.tban.ChooseYourAdventure">
+   <children>
+      <ImageView fx:id="logoGif" fitHeight="172.0" fitWidth="382.0" layoutY="21.0" pickOnBounds="true" />
+      <ImageView fx:id="LogoPane" fitHeight="172.0" fitWidth="382.0" layoutY="21.0" pickOnBounds="true" />
+      <Pane fx:id="ButtonPane" layoutY="14.0" prefHeight="200.0" prefWidth="382.0" stylesheets="@styleSheet.css">
+         <children>
+            <Button fx:id="AMFL" layoutX="57.0" layoutY="85.0" onAction="#MindFlayerAdv" text="Adventure in to the Mind Flayer's Lair" />
+         </children>
+      </Pane>
+      <MenuBar prefHeight="25.0" prefWidth="382.0">
+        <menus>
+          <Menu mnemonicParsing="false" text="File">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Close" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Edit">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Delete" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Help">
+            <items>
+              <MenuItem mnemonicParsing="false" text="About" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+   </children>
+</AnchorPane>

@@ -1,0 +1,394 @@
+package sora.tban;
+
+import java.io.File;
+import java.net.URL;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import java.util.concurrent.TimeUnit;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
+import javafx.animation.TranslateTransition;
+import javafx.application.Platform;
+import static javafx.application.Platform.exit;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import static javafx.scene.control.ButtonType.CANCEL;
+import static javafx.scene.control.ButtonType.YES;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.util.Callback;
+import javafx.util.Duration;
+
+public class AMFLController implements Initializable {
+
+    @FXML
+    BorderPane mainScreen;
+    @FXML
+    ImageView mapView, pMini;
+    @FXML
+    TextArea desBox;
+    @FXML
+    ListView inventory;
+    @FXML
+    Button openInvy;
+    @FXML
+    Button option1, option2, option3, option4, north, west, east, south, interact;
+    @FXML
+    VBox MovementButtons;
+
+    public static ObservableList<String> invyList;
+    public static ArrayList<PlayerItems> playerItems = new ArrayList<PlayerItems>();
+    static ArrayList<Integer> playPosition = new ArrayList<Integer>();
+    static int[] ofInterest;
+    static String currFloor;
+    static int currRoomId, interactRoom, bLowerX, bLowerY, BUpperX, BUpperY;
+    private long startTimes;
+    static String desBoxText, mapViewImg;
+
+    public void addItem() {
+        SqlManagement.UpdateInvy(1989, interactRoom);
+    }
+
+    public void SetRoom(String getFloorName, int getRoomId, int inRoom) {
+        //Add lab thing here
+        SqlManagement.SetRoom(getFloorName, getRoomId, inRoom);
+        desBox.setText(desBoxText);
+        mapView.setImage(new Image(new File(mapViewImg).toURI().toString()));
+        if (inRoom != -1) {
+            pMini.setX(playPosition.get(0));
+            pMini.setY(playPosition.get(1));
+            pMini.setRotate(playPosition.get(2));
+        }
+    }
+
+    void SetInteration(String getFloorName, int interactRoomid) {
+        // Platform.runLater(() -> {        });
+
+        String[] buttonsText = SqlManagement.SetInteration(getFloorName, interactRoomid);
+        desBox.setText(desBoxText);
+        mapView.setImage(new Image(new File(mapViewImg).toURI().toString()));
+        SetButtons(buttonsText);
+    }
+
+    //Option one always take, enter, or fight Room_Id + 5 * 11
+    //Option two always inspect, run, wait Room_Id + 5 * 22
+    //Option three Room_Id + 5 * 33
+    //Option four Room_Id + 5 * 44
+    void ConfrimInteraction(String getFloorName, int interactRoom) {
+        String[] buttonsText = SqlManagement.ConfrimInteraction(getFloorName, interactRoom);
+        desBox.setText(desBoxText);
+        mapView.setImage(new Image(new File(mapViewImg).toURI().toString()));
+        SetButtons(buttonsText);
+        MoreOptions(buttonsText[4]);
+    }
+
+    @FXML
+    void handlesOptionOne() {
+        int newRoomId = (interactRoom + 5) * 11;
+        System.out.println("Option 1: interactRoom= " + interactRoom + " newRoomId= " + newRoomId);
+        ConfrimInteraction(currFloor, newRoomId);
+    }
+
+    @FXML
+    void handlesOptionTwo() {
+        int newRoomId = (interactRoom + 5) * 22;
+        System.out.println("Option 2: interactRoom= " + interactRoom + " newRoomId= " + newRoomId);
+        ConfrimInteraction(currFloor, newRoomId);
+    }
+
+    @FXML
+    void handlesOptionThree() {
+        int newRoomId = (interactRoom + 5) * 33;
+        System.out.println("Option 3: interactRoom= " + interactRoom + " newRoomId= " + newRoomId);
+        ConfrimInteraction(currFloor, newRoomId);
+
+    }
+
+    @FXML
+    void handlesOptionFour() {
+        int newRoomId = (interactRoom + 5) * 44;
+        ConfrimInteraction(currFloor, newRoomId);
+        System.out.println("Option 1: interactRoom= " + interactRoom + " newRoomId= " + newRoomId);
+        double convert = TimeUnit.SECONDS.convert((System.nanoTime() - startTimes), TimeUnit.NANOSECONDS);
+
+    }
+
+    public void SetButtons(String[] buttonsText) {
+        if (buttonsText[0].equals("death") || buttonsText[0].equals("New Room")) {
+            option1.setVisible(false);
+            option2.setVisible(false);
+            option3.setVisible(false);
+            option4.setVisible(false);
+        } else {
+            if (buttonsText[0] == null) {
+                option1.setVisible(false);
+            } else {
+                option1.setVisible(true);
+                option1.setText(buttonsText[0]);
+            }
+            if (buttonsText[1] == null) {
+                option2.setVisible(false);
+            } else {
+                option2.setVisible(true);
+                option2.setText(buttonsText[1]);
+            }
+            if (buttonsText[2] == null) {
+                option3.setVisible(false);
+            } else {
+                option3.setVisible(true);
+                option3.setText(buttonsText[2]);
+            }
+            if (buttonsText[3] == null) {
+                option4.setVisible(false);
+            } else {
+                option4.setVisible(true);
+                option4.setText(buttonsText[3]);
+            }
+        }
+    }
+    @FXML
+    public void ControlMovement() { //Make it so if you spam button it doesn't mess up the movement
+        Timeline timeline = new Timeline();
+        KeyFrame end = null;
+        if (north.isArmed() && bLowerY <= (playPosition.get(1) - 41)) {
+            playPosition.set(1, playPosition.get(1) - 41);
+            end = new KeyFrame(Duration.millis(500), new KeyValue(pMini.yProperty(), playPosition.get(1)));
+            pMini.setRotate(0);
+        }
+        if (east.isArmed() && BUpperX >= (playPosition.get(0) + 41)) {
+            playPosition.set(0, playPosition.get(0) + 41);
+            end = new KeyFrame(Duration.millis(500), new KeyValue(pMini.xProperty(), playPosition.get(0)));
+            pMini.setRotate(90);
+        }
+        if (south.isArmed() && BUpperY >= (playPosition.get(1) + 41)) {
+            playPosition.set(1, playPosition.get(1) + 41);
+            end = new KeyFrame(Duration.millis(500), new KeyValue(pMini.yProperty(), playPosition.get(1)));
+            pMini.setRotate(180);
+        }
+        if (west.isArmed() && bLowerX <= (playPosition.get(0) - 41)) {
+            playPosition.set(0, playPosition.get(0) - 41);
+            end = new KeyFrame(Duration.millis(500), new KeyValue(pMini.xProperty(), playPosition.get(0)));
+            pMini.setRotate(270);
+        }
+        MovementButtons.setVisible(false); //Bad sulotion
+        timeline.getKeyFrames().add(end);
+        timeline.play();
+        timeline.setOnFinished((e) -> {
+            MovementButtons.setVisible(true);
+        });
+        CheckIntreset();
+        CheckDisable();
+    }
+
+    void CheckDisable() {
+        if (bLowerY >= (playPosition.get(1) - 41)) {
+            north.setDisable(true);
+        } else {
+            north.setDisable(false);
+        }
+        if (BUpperX <= (playPosition.get(0) + 41)) {
+            east.setDisable(true);
+        } else {
+            east.setDisable(false);
+        }
+        if (BUpperY <= (playPosition.get(1) + 41)) {
+            south.setDisable(true);
+        } else {
+            south.setDisable(false);
+        }
+        if (bLowerX >= (playPosition.get(0) - 41)) {
+            west.setDisable(true);
+        } else {
+            west.setDisable(false);
+        }
+    }
+
+    public void CheckIntreset() {
+        for (int i = 0; i < ofInterest.length; i += 3) {
+            int X = ofInterest[i] - playPosition.get(0);
+            int Y = ofInterest[i + 1] - playPosition.get(1);
+            interactRoom = ofInterest[i + 2];
+            //System.out.println(X + "  " + Y + "  " + interactRoom + " " + i);
+            //System.out.println("");
+            if ((-5 <= X || X >= 5) && (-5 <= Y || Y >= 5)) {
+                interact.setDisable(false);
+                 break;
+            } else {
+                interact.setDisable(true);
+               
+            }
+        }
+    }
+
+    public void MoreOptions(String reset) {
+        if (reset.equals("off")) {
+            interact.setDisable(true);
+        } else if (reset.equals("reset")) {
+            CheckDisable();
+            Interact();
+            SetRoom(currFloor, currRoomId, 0);
+        } else if (reset.equals("New Room")) {
+            System.out.println(currFloor + " " + currRoomId);
+            CheckDisable();
+            Interact();
+            SetRoom(currFloor, currRoomId, 0);
+        } else {
+            interact.setDisable(false);
+        }
+    }
+
+    @FXML
+    public void Interact() {
+        if (interact.getText().equals("Interact")) {
+            SetInteration(currFloor, interactRoom);
+            interact.setText("Exit");
+            pMini.setVisible(false);
+            ButtonFlip(1);
+        } else {
+            SetRoom(currFloor, currRoomId, -1);
+            interact.setText("Interact");
+            pMini.setVisible(true);
+            ButtonFlip(0);
+        }
+    }
+
+    @FXML
+    public void HandleUseItem() {
+        int selectedIndex = inventory.getSelectionModel().getSelectedIndex();
+        if (selectedIndex >= 0 && selectedIndex < invyList.size()) {
+            Alert alert = new Alert(AlertType.NONE, "Confrimation", YES, CANCEL);
+            alert.setTitle("Use Item");
+            String s = "Are you sure you would like to use your " + playerItems.get(selectedIndex).getItem();
+            alert.setContentText(s);
+            Optional<ButtonType> result = alert.showAndWait();
+            if ((result.isPresent()) && (result.get() == ButtonType.YES)) {
+                int total = playerItems.get(selectedIndex).getTotal();
+                if ((total - 1) == 0) {
+                    invyList.remove(selectedIndex);
+                    playerItems.remove(selectedIndex);
+                } else {
+                    PlayerItems x = playerItems.get(selectedIndex);
+                    x.setTotal(x.getTotal() - 1);
+                    playerItems.set(selectedIndex, x);
+                    invyList.set(selectedIndex, playerItems.get(selectedIndex).getTotal() + ": " + playerItems.get(selectedIndex).getItem());
+                }
+            }
+        }
+    }
+
+    @FXML
+    public void HandlesOpenInvey() {
+        if (openInvy.getText().equals("Close Inventory")) {
+            openInvy.setText("Open Inventory");
+            inventory.setVisible(false);
+            ButtonFlip(0);
+        } else {
+            openInvy.setText("Close Inventory");
+            inventory.setVisible(true);
+            ButtonFlip(1);
+        }
+    }
+
+    void ButtonFlip(int i) {
+        boolean[] flip = new boolean[]{false, true};
+        north.setDisable(flip[i]);
+        east.setDisable(flip[i]);
+        south.setDisable(flip[i]);
+        west.setDisable(flip[i]);
+    }
+
+    @FXML
+    public void HandlesSave() {
+        ArrayList<String> saves = new ArrayList<String>();
+        saves.add(playPosition.get(0) + "");
+        saves.add(playPosition.get(1) + "");
+        saves.add(playPosition.get(2) + "");
+        saves.add(currFloor);
+        saves.add(currRoomId + "");
+        saves.add(App.startTime + "");
+        JsonManagement.SavePlayer(saves);
+    }
+
+    @FXML
+    public void HandlesLoad() {
+        invyList.clear();
+        //ArrayList<String> roomSaves = new ArrayList<String>();
+        JsonManagement.SetInvy("PlayerItems.json");
+        String[] l = JsonManagement.LoadPlayer();
+        playPosition.set(0, Integer.parseInt(l[0]));
+        playPosition.set(1, Integer.parseInt(l[1]));
+        playPosition.set(2, Integer.parseInt(l[2]));
+        pMini.setX(playPosition.get(0));
+        pMini.setY(playPosition.get(1));
+        pMini.setRotate(playPosition.get(2));
+        currFloor = l[2];
+        currRoomId = Integer.parseInt(l[3]);
+        startTimes = Long.parseLong(l[4]);
+        SetRoom(currFloor, currRoomId, -1);
+
+    }
+
+    @FXML
+    public void HandlesClose() {
+        exit();
+    }
+
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+        startTimes = App.startTime;
+        playPosition.add(0);
+        playPosition.add(0);
+        playPosition.add(0);
+        SqlManagement.RunDB("AMFL.accdb"); //quick test only
+        invyList = inventory.getItems();
+        inventory.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
+            @Override
+            public ListCell<String> call(ListView<String> list) {
+                return new addDesc();
+            }
+        });
+        currFloor = "outside"; //Set to outside
+        currRoomId = 2; //Sett to 0
+        JsonManagement.SetInvy("StartingPlayerItems.json"); //sets starting inventory
+        SetRoom(currFloor, currRoomId, 0); //Sets starting Room
+        CheckDisable();
+    }
+
+    class addDesc extends ListCell<String> {
+
+        final Tooltip tip = new Tooltip();
+
+        @Override
+        public void updateItem(String Item, boolean empty) {
+            super.updateItem(Item, empty);
+            if (Item != null) {
+                for (int i = 0; i < playerItems.size(); i++) {
+                    String check = playerItems.get(i).getTotal() + ": " + playerItems.get(i).getItem();
+                    if (check.equals(Item)) {
+                        tip.setText(playerItems.get(i).getDescription());
+                    }
+                }
+                setText(Item);
+                setTooltip(tip);
+            } else {
+                setText("");
+                setTooltip(null);
+            }
+        }
+    }
+}

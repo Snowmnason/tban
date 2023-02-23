@@ -1,0 +1,14 @@
+[
+    {
+        "id": 1989,
+        "Item": "Health Pot",
+        "description": "Small Flask filled with a pink almond flavor liquid. When consumed the user will feel reguvenated (heal 10 hp)",
+        "total": 1
+    },
+    {
+        "id": 3304,
+        "Item": "Torch",
+        "description": "A wooden rod tipped with a cloth dosed in oil that when lit will create a flame that will last for 5 hours(Does nothing, there is no darkness)",
+        "total": 5
+    }
+]

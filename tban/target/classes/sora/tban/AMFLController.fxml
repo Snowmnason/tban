@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane id="BorderPane" fx:id="mainScreen" minWidth="1201.0" prefHeight="877.0" prefWidth="1550.0" stylesheets="@styleSheet.css" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sora.tban.AMFLController">
+   <bottom>
+      <HBox fx:id="conBox" alignment="CENTER" prefHeight="150.0" prefWidth="1201.0" stylesheets="@styleSheet.css" BorderPane.alignment="CENTER">
+         <children>
+            <VBox fx:id="MovementButtons" alignment="CENTER" prefHeight="166.0" prefWidth="406.0">
+               <children>
+                  <HBox prefHeight="36.0" prefWidth="368.0" spacing="15.0">
+                     <children>
+                        <Button fx:id="openInvy" mnemonicParsing="false" onAction="#HandlesOpenInvey" text="Open Inventory">
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin></Button>
+                        <Button fx:id="north" mnemonicParsing="false" onAction="#ControlMovement" prefHeight="25.0" prefWidth="120.0" stylesheets="@styleSheet.css" text="North">
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                        </Button>
+                     </children>
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </HBox>
+                  <HBox alignment="CENTER" prefHeight="60.0" prefWidth="401.0" spacing="15.0">
+                     <children>
+                        <Button fx:id="west" mnemonicParsing="false" onAction="#ControlMovement" prefHeight="25.0" prefWidth="121.0" text="West">
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                        </Button>
+                        <Button fx:id="interact" disable="true" mnemonicParsing="false" onAction="#Interact" prefHeight="31.0" prefWidth="77.0" text="Interact" />
+                        <Button fx:id="east" mnemonicParsing="false" onAction="#ControlMovement" prefHeight="25.0" prefWidth="121.0" text="East">
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                        </Button>
+                     </children>
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </HBox>
+                  <Button fx:id="south" mnemonicParsing="false" onAction="#ControlMovement" prefHeight="20.0" prefWidth="121.0" text="South" />
+               </children>
+            </VBox>
+            <Button fx:id="option1" maxWidth="200.0" mnemonicParsing="false" onAction="#handlesOptionOne" prefHeight="25.0" prefWidth="200.0" text="Option 1" visible="false">
+               <HBox.margin>
+                  <Insets bottom="15.0" left="10.0" right="10.0" top="14.0" />
+               </HBox.margin>
+            </Button>
+            <Button fx:id="option2" maxWidth="200.0" mnemonicParsing="false" onAction="#handlesOptionTwo" prefHeight="25.0" prefWidth="200.0" text="Option 2" visible="false">
+               <HBox.margin>
+                  <Insets bottom="15.0" left="10.0" right="10.0" top="14.0" />
+               </HBox.margin>
+            </Button>
+            <Button fx:id="option3" maxWidth="200.0" mnemonicParsing="false" onAction="#handlesOptionThree" prefHeight="25.0" prefWidth="200.0" text="Option 3" visible="false">
+               <HBox.margin>
+                  <Insets bottom="15.0" left="10.0" right="10.0" top="14.0" />
+               </HBox.margin>
+            </Button>
+            <Button fx:id="option4" maxWidth="200.0" mnemonicParsing="false" onAction="#handlesOptionFour" prefHeight="25.0" prefWidth="200.0" text="Option 4" visible="false">
+               <HBox.margin>
+                  <Insets bottom="15.0" left="10.0" right="10.0" top="14.0" />
+               </HBox.margin>
+            </Button>
+         </children>
+      </HBox>
+   </bottom>
+   <top>
+      <MenuBar prefWidth="1550.0" BorderPane.alignment="CENTER">
+        <menus>
+          <Menu mnemonicParsing="false" text="File">
+            <items>
+                  <MenuItem mnemonicParsing="false" onAction="#HandlesSave" text="Save" />
+                  <MenuItem fx:id="Load" mnemonicParsing="false" onAction="#HandlesLoad" text="Load" />
+              <MenuItem mnemonicParsing="false" onAction="#HandlesClose" text="Close" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Edit" />
+          <Menu mnemonicParsing="false" text="Help">
+            <items>
+              <MenuItem mnemonicParsing="false" onAction="#HandlesHelp" text="Quick Help" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+   </top>
+   <center>
+      <TextArea id="descBox" fx:id="desBox" editable="false" maxWidth="1.7976931348623157E308" minHeight="300.0" minWidth="400.0" prefHeight="702.0" prefWidth="916.0" stylesheets="@styleSheet.css" wrapText="true" BorderPane.alignment="CENTER" />
+   </center>
+   <right>
+      <Pane prefHeight="702.0" prefWidth="621.0" BorderPane.alignment="CENTER">
+         <children>
+            <Pane fx:id="imageView" nodeOrientation="LEFT_TO_RIGHT" prefHeight="703.0" prefWidth="620.0">
+               <children>
+                  <ImageView fx:id="mapView" fitHeight="702.0" fitWidth="650.0" nodeOrientation="INHERIT" pickOnBounds="true" preserveRatio="true" />
+                  <ImageView fx:id="pMini" fitHeight="44.0" fitWidth="46.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@PlayerChararter.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </Pane>
+            <ListView id="inventory" fx:id="inventory" onMouseClicked="#HandleUseItem" prefHeight="702.0" prefWidth="650.0" stylesheets="@styleSheet.css" visible="false" />
+         </children>
+      </Pane>
+   </right>
+</BorderPane>
